@@ -5,7 +5,7 @@
 
 Recognition and evaluation of mathematical expressions typically consists of 6 major stages: pre-processing, segmentation, feature extraction, symbol classification, construction of mathematical expression and evaluation of mathematical expression. The architecture of recognition and evaluation of mathematical expression for training and testing dataset in shown in figure.
 
-![Flow of the process](assets/images/flow.png)
+![Flow of the process](assets/images/flow.PNG)
 
 ### Mathematical Expression
 
