@@ -1,109 +1,51 @@
 # Recognition and Evaluation of Mathematical Expressions
 
-[![Build Status](https://travis-ci.org/pages-themes/slate.svg?branch=master)](https://travis-ci.org/pages-themes/slate) [![Gem Version](https://badge.fury.io/rb/jekyll-theme-slate.svg)](https://badge.fury.io/rb/jekyll-theme-slate)
 
-*Slate is a Jekyll theme for GitHub Pages. You can [preview the theme to see what it looks like](http://pages-themes.github.io/slate), or even [use it today](#usage).*
+## Method
 
-![Thumbnail of Slate](thumbnail.png)
+Recognition and evaluation of mathematical expressions typically consists of 6 major stages: pre-processing, segmentation, feature extraction, symbol classification, construction of mathematical expression and evaluation of mathematical expression. The architecture of recognition and evaluation of mathematical expression for training and testing dataset in shown in figure.
 
-## Usage
+![Flow of the process](assets/images/flow.png)
 
-To use the Slate theme:
+### Mathematical Expression
 
-1. Add the following to your site's `_config.yml`:
+The mathematical expression is captured via webcam and OpenCV. The frames which are collected from webcam are in BGR format which is converted into gray scale image and sent for image pre-processing. 
 
-    ```yml
-    theme: jekyll-theme-slate
-    ```
+### Pre-pre-processing
 
-2. Optionally, if you'd like to preview your site on your computer, add the following to your site's `Gemfile`:
+The quality of the image can be improved through pre-processing. Gray scale image is converted into binary image. It is further processed by applying Otsu Binarization. Morphological transformations are applied to the images as it removes noise. We have applied both the morphological operators Erosion followed by Dilation as erosions removes the small white noises, detach connected objects. Since erosion shrinks are object we dilate it to increase the area of the object and join the broken parts of an object.
 
-    ```ruby
-    gem "github-pages", group: :jekyll_plugins
-    ```
+### Segmentation
 
-## Customizing
+In segmentation, the input is segmented into individual symbols.  The segmentation is now performed by threshold function. We chose adaptive thresholding as the image would have different lighting conditions in different areas. Adaptive thresholding algorithm calculates the threshold for small regions of the image. By doing so, we get different thresholds for different regions of the same image and thus yield better results for images having different lightning conditions.
 
-### Configuration variables
+### Contour Extraction
 
-Slate will respect the following variables, if set in your site's `_config.yml`:
+Contours are used for object detection and recognition. In accordance with OpenCV, the object to be recognized is in white while the background is in black. The parameters given to contours are source image (In our case the segmented or threshold image), the hierarchy (Chose RETR_TREE as it retrieves the entire hierarchy of the image) and the approximation method of contour(CHAIN_APPROX_SIMPLE). We take into consideration the contour area greater than 40 and a straight bounding rectangle where the height(length) is greater than 23. We wrote rules to fix the issue for symbols that contain two shapes like “=”.  
 
-```yml
-title: [The title of your site]
-description: [A short description of your site's purpose]
-```
+![contour](assets/images/contour.png)
 
-Additionally, you may choose to set the following optional variables:
+### Construction of Mathematical Expressions
 
-```yml
-show_downloads: ["true" or "false" to indicate whether to provide a download URL]
-google_analytics: [Your Google Analytics tracking ID]
-```
+To construct mathematical expressions are being constructed based on the x and y cooridinates of the start of the elements that make up the expression.
 
-### Stylesheet
+### Classification (Convolutional Neural Network)
 
-If you'd like to add your own custom styles:
+Classification (Convolutional Neural Network)
 
-1. Create a file called `/assets/css/style.scss` in your site
-2. Add the following content to the top of the file, exactly as shown:
-    ```scss
-    ---
-    ---
+#### Convolution Layer:
 
-    @import "{{ site.theme }}";
-    ```
-3. Add any custom CSS (or Sass, including imports) you'd like immediately after the `@import` line
+This is the main operation in CNN and we have 8 convolution layers. It will compute the output of neurons that are connected to local regions in the input. We decreased the filter size as we moved to other layers (140,120,100,100,90,90,80) with kernel size of 5*5. This structure was chosen as it gave us the highest accuracy. We assigned the value “same” for border_mode as it does some padding around the input image, thus making the output image size same as that of input. The activation function we used for all the 8 layers is relu.
 
-*Note: If you'd like to change the theme's Sass variables, you must set new values before the `@import` line in your stylesheet.*
+#### Max Pooling:
 
-### Layouts
+We used pooling layer for the first 5 convolutional layers. It basically reduces the spatial size i.e. height and width (not depth). The size of the filter maps is reduced as we apply max filter to the non-overlapping sub regions. The total number of filter maps is reduced by a factor of 4 by using 2*2 max filters (pooling size=2). We have given a stride of (2,2) which specifies how much we need to shift the kernel in each step to compute the next pixel in the result (stride size same as pool size by default).
 
-If you'd like to change the theme's HTML layout:
+#### Fully Connected Layer:
 
-1. [Copy the original template](https://github.com/pages-themes/slate/blob/master/_layouts/default.html) from the theme's repository<br />(*Pro-tip: click "raw" to make copying easier*)
-2. Create a file called `/_layouts/default.html` in your site
-3. Paste the default layout content copied in the first step
-4. Customize the layout as you'd like
+To complete the model architecture, we flatten the output from the previous layers and enter a fully connected layer. The fully connected layer is declared using Dense() layer. We have taken 500 nodes each activated by relu function. Next, used SoftMax classification in the output layer which is the size of the total number of classes so that we could get one node per class label.
 
-### Overriding GitHub-generated URLs
+## Evaluation of Mathematical Expressions
 
-Templates often rely on URLs supplied by GitHub such as links to your repository or links to download your project. If you'd like to override one or more default URLs:
+As SymPy doesn’t validate the mathematical expression but evaluates, some functions to check the validity of the expressions are developed. These functions help in removing the noisy contours detected by OpenCV and pass a valid expression to SymPy.
 
-1. Look at [the template source](https://github.com/pages-themes/slate/blob/master/_layouts/default.html) to determine the name of the variable. It will be in the form of `{{ site.github.zip_url }}`.
-2. Specify the URL that you'd like the template to use in your site's `_config.yml`. For example, if the variable was `site.github.url`, you'd add the following:
-    ```yml
-    github:
-      zip_url: http://example.com/download.zip
-      another_url: another value
-    ```
-3. When your site is built, Jekyll will use the URL you specified, rather than the default one provided by GitHub.
-
-*Note: You must remove the `site.` prefix, and each variable name (after the `github.`) should be indent with two space below `github:`.*
-
-For more information, see [the Jekyll variables documentation](https://jekyllrb.com/docs/variables/).
-
-## Roadmap
-
-See the [open issues](https://github.com/pages-themes/slate/issues) for a list of proposed features (and known issues).
-
-## Project philosophy
-
-The Slate theme is intended to make it quick and easy for GitHub Pages users to create their first (or 100th) website. The theme should meet the vast majority of users' needs out of the box, erring on the side of simplicity rather than flexibility, and provide users the opportunity to opt-in to additional complexity if they have specific needs or wish to further customize their experience (such as adding custom CSS or modifying the default layout). It should also look great, but that goes without saying.
-
-## Contributing
-
-Interested in contributing to Slate? We'd love your help. Slate is an open source project, built one contribution at a time by users like you. See [the CONTRIBUTING file](docs/CONTRIBUTING.md) for instructions on how to contribute.
-
-### Previewing the theme locally
-
-If you'd like to preview the theme locally (for example, in the process of proposing a change):
-
-1. Clone down the theme's repository (`git clone https://github.com/pages-themes/slate`)
-2. `cd` into the theme's directory
-3. Run `script/bootstrap` to install the necessary dependencies
-4. Run `bundle exec jekyll serve` to start the preview server
-5. Visit [`localhost:4000`](http://localhost:4000) in your browser to preview the theme
-
-### Running tests
-
-The theme contains a minimal test suite, to ensure a site with the theme would build successfully. To run the tests, simply run `script/cibuild`. You'll need to run `script/bootstrap` one before the test script will work.
