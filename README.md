@@ -1,9 +1,9 @@
-# Recognition and Evaluation of Mathematical Expressions
+# Recognition and Evaluation of Handwritten Mathematical Expressions
 
 
 ## Method
 
-Recognition and evaluation of mathematical expressions typically consists of 6 major stages: pre-processing, segmentation, feature extraction, symbol classification, construction of mathematical expression and evaluation of mathematical expression. The architecture of recognition and evaluation of mathematical expression for training and testing dataset in shown in figure.
+Recognition and evaluation of handwritten mathematical expressions typically consists of 6 major stages: pre-processing, segmentation, feature extraction, symbol classification, construction of mathematical expression and evaluation of mathematical expression. The architecture of recognition and evaluation of mathematical expression for training and testing dataset in shown in figure.
 
 ![Flow of the process](assets/images/flow.PNG)
 
@@ -35,11 +35,11 @@ Classification (Convolutional Neural Network)
 
 #### Convolution Layer:
 
-This is the main operation in CNN and we have 8 convolution layers. It will compute the output of neurons that are connected to local regions in the input. We decreased the filter size as we moved to other layers (140,120,100,100,90,90,80) with kernel size of 5*5. This structure was chosen as it gave us the highest accuracy. We assigned the value “same” for border_mode as it does some padding around the input image, thus making the output image size same as that of input. The activation function we used for all the 8 layers is relu.
+This is the main operation in CNN and we have 8 convolution layers. It will compute the output of neurons that are connected to local regions in the input. We decreased the filter size as we moved to other layers (140,120,100,100,90,90,80) with kernel size of 5 * 5. This structure was chosen as it gave us the highest accuracy. We assigned the value “same” for border_mode as it does some padding around the input image, thus making the output image size same as that of input. The activation function we used for all the 8 layers is relu.
 
 #### Max Pooling:
 
-We used pooling layer for the first 5 convolutional layers. It basically reduces the spatial size i.e. height and width (not depth). The size of the filter maps is reduced as we apply max filter to the non-overlapping sub regions. The total number of filter maps is reduced by a factor of 4 by using 2*2 max filters (pooling size=2). We have given a stride of (2,2) which specifies how much we need to shift the kernel in each step to compute the next pixel in the result (stride size same as pool size by default).
+We used pooling layer for the first 5 convolutional layers. It basically reduces the spatial size i.e. height and width (not depth). The size of the filter maps is reduced as we apply max filter to the non-overlapping sub regions. The total number of filter maps is reduced by a factor of 4 by using 2 * 2 max filters (pooling size=2). We have given a stride of (2,2) which specifies how much we need to shift the kernel in each step to compute the next pixel in the result (stride size same as pool size by default).
 
 #### Fully Connected Layer:
 
