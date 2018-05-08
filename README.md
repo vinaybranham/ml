@@ -49,3 +49,4 @@ To complete the model architecture, we flatten the output from the previous laye
 
 As SymPy doesn’t validate the mathematical expression but evaluates, some functions to check the validity of the expressions are developed. These functions help in removing the noisy contours detected by OpenCV and pass a valid expression to SymPy.
 
+## Results
